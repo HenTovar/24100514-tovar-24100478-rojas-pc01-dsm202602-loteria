@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.esan.pc01.loteria.auth.*
+import com.esan.pc01.loteria.game.PlayScreen
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 
@@ -59,34 +60,31 @@ private fun Authentication(gateway: AuthGateway) {
     BackHandler(enabled = state.user == null && state.mode == AuthMode.REGISTER) {
         if (!state.busy) controller.switchMode()
     }
+    val authenticatedUser = state.user
+    if (authenticatedUser != null) {
+        key(authenticatedUser.uid) { PlayScreen(authenticatedUser.uid, authenticatedUser.email) { controller.signOut() } }
+        return
+    }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Lotería PC01", style = MaterialTheme.typography.headlineLarge)
-        val user = state.user
-        if (user != null) {
-            Text("Sesión iniciada", style = MaterialTheme.typography.titleLarge)
-            Text("Correo: ${user.email ?: "No disponible"}")
-            Text("La siguiente entrega habilitará el registro de tu jugada y su seguimiento.")
-            Button(onClick = { controller.signOut() }, enabled = !state.busy) { Text("Cerrar sesión") }
-        } else {
-            val registration = state.mode == AuthMode.REGISTER
-            Text(if (registration) "Crear cuenta" else "Iniciar sesión", style = MaterialTheme.typography.titleLarge)
-            OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Correo") },
-                singleLine = true, enabled = !state.busy, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Contraseña") },
-                singleLine = true, enabled = !state.busy, visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth())
-            if (registration) OutlinedTextField(value = confirmation, onValueChange = { confirmation = it },
-                label = { Text("Repetir contraseña") }, singleLine = true, enabled = !state.busy,
-                visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth())
-            Button(onClick = { controller.submit(email, password, confirmation) }, enabled = !state.busy) {
-                Text(if (registration) "Registrarme" else "Entrar")
-            }
-            TextButton(onClick = { controller.switchMode() }, enabled = !state.busy) {
-                Text(if (registration) "Volver al login" else "Crear una cuenta")
-            }
+        val registration = state.mode == AuthMode.REGISTER
+        Text(if (registration) "Crear cuenta" else "Iniciar sesión", style = MaterialTheme.typography.titleLarge)
+        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Correo") },
+            singleLine = true, enabled = !state.busy, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Contraseña") },
+            singleLine = true, enabled = !state.busy, visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth())
+        if (registration) OutlinedTextField(value = confirmation, onValueChange = { confirmation = it },
+            label = { Text("Repetir contraseña") }, singleLine = true, enabled = !state.busy,
+            visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth())
+        Button(onClick = { controller.submit(email, password, confirmation) }, enabled = !state.busy) {
+            Text(if (registration) "Registrarme" else "Entrar")
+        }
+        TextButton(onClick = { controller.switchMode() }, enabled = !state.busy) {
+            Text(if (registration) "Volver al login" else "Crear una cuenta")
         }
         if (state.busy) { CircularProgressIndicator(); Text("Conectando…") }
         state.message?.let { Text(it, color = MaterialTheme.colorScheme.error) }

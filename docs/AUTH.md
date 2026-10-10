@@ -6,7 +6,7 @@
 
 `AuthController` valida campos, elimina espacios alrededor del correo (no de la contraseña), evita solicitudes duplicadas mientras espera y convierte fallos en mensajes de interfaz. En registro exige al menos seis caracteres y confirmación coincidente; Firebase valida además su política de contraseñas. No crea una identidad al recibir éxito: el usuario/UID/correo se toman exclusivamente de `AuthStateListener`, que también recupera la sesión que conserva el SDK al reabrir la app.
 
-La pantalla Compose observa `StateFlow`: pasa de login a registro y permite volver; al autenticarse muestra el correo y cerrar sesión. La pantalla de jugada aún no está implementada. `DisposableEffect` agrega un único listener y lo retira al destruir la composición; el controlador ignora callbacks tardíos. `remember` mantiene las contraseñas únicamente en memoria de la pantalla, sin `rememberSaveable`, y se limpian al cambiar modo o usuario. No se imprimen contraseñas, tokens ni excepciones crudas.
+La pantalla Compose observa `StateFlow`: pasa de login a registro y permite volver; al autenticarse muestra el correo y cerrar sesión. Tras autenticarse, esta versión abre la selección de sorteo y la jugada descrita en JUGADA.md. `DisposableEffect` agrega un único listener y lo retira al destruir la composición; el controlador ignora callbacks tardíos. `remember` mantiene las contraseñas únicamente en memoria de la pantalla, sin `rememberSaveable`, y se limpian al cambiar modo o usuario. No se imprimen contraseñas, tokens ni excepciones crudas.
 
 Si falta la configuración Firebase, la app muestra instrucciones y no simula una sesión. Las pruebas usan un proveedor falso para ejercitar lógica y ciclo de vida: **no acreditan conexión con Firebase ni la compilación de Android**.
 
