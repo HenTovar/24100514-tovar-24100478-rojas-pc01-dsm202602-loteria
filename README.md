@@ -1,6 +1,6 @@
 # Lotería — PC01 · Desarrollo de aplicaciones móviles 2026-02
 
-Proyecto Android nuevo para la práctica de Lotería. Esta primera entrega contiene la estructura Gradle, una pantalla inicial Compose y las dependencias de Firebase. **Esta rama añade registro/login reales con Firebase Auth y cierre de sesión; jugadas y seguimiento siguen pendientes.** Las partes se incorporan mediante PR separados.
+Proyecto Android nuevo para la práctica de Lotería. Incluye registro/login con Firebase Auth y jugada persistente por usuario y sorteo. Seguimiento en tiempo real y cálculos finales siguen pendientes de PR separados.
 
 ## Integrantes
 
@@ -34,7 +34,7 @@ Las pruebas Kotlin/JVM de autenticación se ejecutaron en contenedor con JDK 17:
 4. Crear Cloud Firestore y **publicar las reglas de `firestore.rules` antes de usar datos reales**, con los pasos de abajo. Estar en modo de prueba permite acceso abierto: el archivo del repositorio NO cambia automáticamente las reglas del proyecto. No habilitar cobros para esta base.
 5. Al existir el JSON, Gradle aplica Google Services. Si falta o pertenece a otro paquete, revisar la configuración; no simular login ni conectarse a un proyecto ajeno.
 
-Las dependencias son los módulos principales `firebase-auth` y `firebase-firestore`. Este PR incluye configuración cliente y reglas, pero no crea un proyecto Firebase ni despliega reglas a la nube. La autenticación implementada y su checklist están en [docs/AUTH.md](docs/AUTH.md); la lectura de jugadas queda para la siguiente parte.
+Las dependencias son los módulos principales `firebase-auth` y `firebase-firestore`. Este PR incluye configuración cliente y reglas, pero no crea un proyecto Firebase ni despliega reglas a la nube. La autenticación implementada y su checklist están en [docs/AUTH.md](docs/AUTH.md); el registro y recuperación de jugadas se explican en [docs/JUGADA.md](docs/JUGADA.md).
 
 ## Publicar las reglas en la consola (Henry)
 
@@ -45,7 +45,7 @@ Las dependencias son los módulos principales `firebase-auth` y `firebase-firest
 
 Las reglas permiten crear una jugada válida propia únicamente con sorteo `abierto`, y deniegan actualizarla/borrarla, leer jugadas ajenas o listar la colección. También validan seis enteros distintos 1–45 y rechazan campos de resultado. La consola administrativa usa permisos de administración; no añadir una regla abierta para publicar bolillas desde la app. **Estas instrucciones no acreditan que las reglas ya estén publicadas**: lo hace Henry desde su consola.
 
-**Validación ejecutada:** 11/11 pruebas, RC0, en Firestore Emulator 1.19.8 dentro de un contenedor desechable (proyecto `demo-loteria-pc01`). No se escribieron datos ni reglas en el Firebase real.
+**Validación actual de reglas:** 15/15 pruebas, RC0, en Firestore Emulator 1.19.8 dentro de un contenedor desechable (proyecto `demo-loteria-pc01`). No se escribieron datos ni reglas en el Firebase real.
 
 ### Probar reglas sin tocar Firebase real
 
@@ -57,9 +57,9 @@ Con Node 20/22, JDK 17 y Firebase CLI compatible: `cd rules-tests && npm ci && c
 |---|---|
 | `sorteos/{id}` | `nombre`: string, `fecha`: Timestamp, `estado`: string (`abierto`, `en_curso`, `finalizado`) |
 | `sorteos/{id}/bolillas/{orden}` | `numero`: entero 1–45, `orden`: entero 1–6 |
-| `sorteos/{id}/jugadas/{uid}` | `uid`: string del usuario autenticado, `numeros`: lista de seis enteros distintos 1–45 |
+| `sorteos/{id}/jugadas/{uid}` | `sorteoId`: string igual al ID de la cabecera/ruta, `uid`: string del usuario autenticado, `numeros`: lista de seis enteros distintos 1–45 |
 
-La relación con el sorteo queda establecida por la ruta; el ID del documento de jugada es el UID para impedir duplicados. El número de bolilla y su orden se guardan como **números**, no strings. Las seis bolillas deben ser distintas y los órdenes únicos/consecutivos. La persistencia y las reglas se implementarán en el PR de jugadas.
+La relación con el sorteo queda establecida por la ruta y se incluye también `sorteoId` en la jugada; el ID del documento de jugada es el UID para impedir duplicados. El número de bolilla y su orden se guardan como **números**, no strings. Las seis bolillas deben ser distintas y los órdenes únicos/consecutivos. La persistencia y las reglas están implementadas en esta parte; **republicar las reglas** para admitir/exigir `sorteoId`.
 
 Aciertos = tamaño de la intersección de los conjuntos `numeros` y bolillas. No guardar aciertos, GANADOR ni SIGUE INTENTANDO en Firestore. Sólo mostrar resultado definitivo con estado `finalizado` y seis bolillas recibidas; antes mostrar espera o Sorteo en curso. La pantalla de seguimiento usará snapshot listeners del estado y de bolillas, retirados con `remove()` al salir, sin polling.
 
@@ -70,11 +70,11 @@ Aciertos = tamaño de la intersección de los conjuntos `numeros` y bolillas. No
 3. **Seguimiento:** listeners de cabecera/bolillas, orden de salida, restauración al ingresar y cancelación al salir.
 4. **Cálculos:** intersección y resultado local condicionado al estado y las seis bolillas.
 
-Cada PR indicará qué hace, cómo probarlo y cómo explicarlo; se alternan autores y la otra cuenta revisa. **No hacer merge sin OK de Henry.** El commit inicial de `main` es únicamente la base del repositorio vacío.
+Cada PR indicará qué hace, cómo probarlo y cómo explicarlo; **un PR a la vez desde la cuenta de Henry; merge con su OK**. **No hacer merge sin OK de Henry.** El commit inicial de `main` es únicamente la base del repositorio vacío.
 
 ## Demostración obligatoria al completar las partes
 
-Usar dos emuladores/dispositivos, cuentas distintas, mismo proyecto y sorteo. Antes de empezar registrar A: `5,12,18,23,34,41`; B: `5,12,18,23,34,42`. Cambiar de `abierto` a `en_curso` desde consola, publicar una por una `5,12,18,23,34,41`, viendo la actualización de ambas sesiones antes de seguir. Tras la quinta: cinco aciertos y sin resultado definitivo. Tras la sexta y `finalizado`: A GANADOR, B SIGUE INTENTANDO. Cerrar/reabrir una app y comprobar recuperación de jugada/bolillas y recálculo. Preparar video con ambas sesiones; esta base aún no permite esa demostración.
+Usar dos emuladores/dispositivos, cuentas distintas, mismo proyecto y sorteo. Antes de empezar registrar A: `5,12,18,23,34,41`; B: `5,12,18,23,34,42`. Cambiar de `abierto` a `en_curso` desde consola, publicar una por una `5,12,18,23,34,41`, viendo la actualización de ambas sesiones antes de seguir. Tras la quinta: cinco aciertos y sin resultado definitivo. Tras la sexta y `finalizado`: A GANADOR, B SIGUE INTENTANDO. Cerrar/reabrir una app y comprobar recuperación de jugada/bolillas y recálculo. Preparar video con ambas sesiones; esta entrega aún no permite esa demostración completa.
 
 ## Referencias técnicas
 

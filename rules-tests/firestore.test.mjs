@@ -1,9 +1,10 @@
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test, before, after, beforeEach } from 'node:test';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, collection, setDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, collection, setDoc, getDoc, getDocs, updateDoc, deleteDoc, runTransaction } from 'firebase/firestore';
 let env;
-const play = (uid = 'alice', numeros = [5,12,18,23,34,41]) => ({uid, numeros});
+const play = (uid = 'alice', numeros = [5,12,18,23,34,41]) => ({sorteoId:'abierto', uid, numeros});
 before(async () => {
   const host = process.env.FIRESTORE_EMULATOR_HOST;
   if (host !== '127.0.0.1:8080') throw new Error('Only local disposable emulator accepted');
@@ -43,7 +44,7 @@ test('cannot overwrite or delete a play even while open',async()=>{
  const db=own();const ref=doc(db,'sorteos/abierto/jugadas/alice');await assertSucceeds(setDoc(ref,play()));await assertFails(updateDoc(ref,{numeros:[1,2,3,4,5,6]}));await assertFails(deleteDoc(ref));await assertFails(setDoc(ref,play()));
 });
 test('only open existing draw accepts play',async()=>{
- const db=own();for(const id of ['cerrado','final','missing']) await assertFails(setDoc(doc(db,`sorteos/${id}/jugadas/alice`),play()));
+ const db=own();for(const id of ['cerrado','final','missing']) await assertFails(setDoc(doc(db,`sorteos/${id}/jugadas/alice`),{...play(),sorteoId:id}));
 });
 test('invalid numbers rejected',async()=>{
  const db=own();for(const ns of [[1,2,3,4,5],[1,2,3,4,5,5],[0,2,3,4,5,6],[1,2,3,4,5,46],[1,2,3,4,5,6.5],[1,2,3,4,5,'6'],[1,2,3,4,5,6,7]]) await assertFails(setDoc(doc(db,'sorteos/abierto/jugadas/alice'),play('alice',ns)));
@@ -56,4 +57,39 @@ test('client cannot create edit or delete headers or balls',async()=>{
 });
 test('unknown collection denied',async()=>{
  await assertFails(setDoc(doc(own(),'usuarios/alice'),{admin:true}));await assertFails(getDoc(doc(own(),'usuarios/alice')));
+});
+
+test('draw id must be present and match document path',async()=>{
+ const db=own();const ref=doc(db,'sorteos/abierto/jugadas/alice');
+ const {sorteoId,...missing}=play();await assertFails(setDoc(ref,missing));
+ await assertFails(setDoc(ref,{...play(),sorteoId:'otro'}));
+});
+test('transaction rejects existing play and persists exact payload once',async()=>{
+ const db=own();const header=doc(db,'sorteos/abierto');const ref=doc(db,'sorteos/abierto/jugadas/alice');
+ const save=()=>runTransaction(db,async tx=>{
+   const d=await tx.get(header);const old=await tx.get(ref);
+   if(d.data().estado!=='abierto'||old.exists())throw new Error('reject');
+   tx.set(ref,play());
+ });
+ await save();const stored=(await getDoc(ref)).data();
+ if(JSON.stringify(stored.numeros)!==JSON.stringify(play().numeros)||stored.sorteoId!=='abierto'||stored.uid!=='alice')throw new Error('payload mismatch');
+ await assert.rejects(save(), /^Error: reject$/);
+ assert.deepEqual((await getDoc(ref)).data(),stored);
+});
+test('concurrent creations leave exactly one immutable play',async()=>{
+ const db=own();const ref=doc(db,'sorteos/abierto/jugadas/alice');
+ const results=await Promise.allSettled([setDoc(ref,play()),setDoc(ref,play('alice',[1,2,3,4,5,6]))]);
+ if(results.filter(r=>r.status==='fulfilled').length!==1)throw new Error('expected exactly one creation');
+ await assertFails(updateDoc(ref,{numeros:[7,8,9,10,11,12]}));
+});
+
+test('closing draw between transaction read and commit prevents play',async()=>{
+ const db=own();const header=doc(db,'sorteos/abierto');const ref=doc(db,'sorteos/abierto/jugadas/alice');let closed=false;
+ await assertFails(runTransaction(db,async tx=>{
+   const d=await tx.get(header);const old=await tx.get(ref);
+   if(!closed){closed=true;await env.withSecurityRulesDisabled(c=>updateDoc(doc(c.firestore(),'sorteos/abierto'),{estado:'en_curso'}));}
+   if(d.data().estado!=='abierto'||old.exists())throw new Error('reject');
+   tx.set(ref,play());
+ }));
+ const result=await getDoc(ref);if(result.exists())throw new Error('closed draw accepted a play');
 });
