@@ -7,3 +7,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "LoteriaPC01"
 include(":app")
+include(":auth-core")
