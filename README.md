@@ -70,7 +70,7 @@ Aciertos = tamaño de la intersección de los conjuntos `numeros` y bolillas. No
 3. **Seguimiento:** listeners de cabecera/bolillas, orden de salida, restauración al ingresar y cancelación al salir.
 4. **Cálculos:** intersección y resultado local condicionado al estado y las seis bolillas.
 
-Cada PR indicará qué hace, cómo probarlo y cómo explicarlo; se alternan autores y la otra cuenta revisa. **No hacer merge sin OK de Henry.** El commit inicial de `main` es únicamente la base del repositorio vacío.
+Cada PR indicará qué hace, cómo probarlo y cómo explicarlo; **un PR a la vez desde la cuenta de Henry; merge con su OK**. **No hacer merge sin OK de Henry.** El commit inicial de `main` es únicamente la base del repositorio vacío.
 
 ## Demostración obligatoria al completar las partes
 

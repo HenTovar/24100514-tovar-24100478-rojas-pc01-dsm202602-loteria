@@ -14,9 +14,9 @@
 
 **Antes de usar esta versión, volver a publicar `firestore.rules` completo en la consola**, como indica el README. El nuevo campo `sorteoId` también es obligatorio en las reglas; las reglas anteriores del PR #2 lo rechazan como campo extra. La publicación de reglas no se hace desde este PR.
 
-Crear en la consola `sorteos/prueba` con `nombre` (string), `fecha` (Timestamp) y `estado` (string: `abierto`). No usar string para la fecha. Recompilar/ejecutar con SDK Android, Firebase configurado y Auth correo/contraseña habilitado.
+Crear en la consola `sorteos/sorteo-prueba` con `nombre` (string), `fecha` (Timestamp) y `estado` (string: `abierto`). La app lee toda la colección y usa el ID real del documento seleccionado, por lo que reconoce `sorteo-prueba` sin cambiar código. No usar string para la fecha. Recompilar/ejecutar con SDK Android, Firebase configurado y Auth correo/contraseña habilitado.
 
-- Usuario A: elegir prueba y registrar `5,12,18,23,34,41`. Comprobar documento `jugadas/{UID_A}` con los tres campos.
+- Usuario A: elegir ese sorteo por nombre y fecha y registrar `5,12,18,23,34,41`. Comprobar documento `jugadas/{UID_A}` con los tres campos.
 - Usuario B: otra sesión/cuenta, registrar `5,12,18,23,34,42`. Cada sesión debe mostrar sólo su jugada.
 - Intentar cinco/siete números, duplicados, 0, 46, decimales o texto: rechaza sin escribir.
 - Cerrar y volver a ingresar: recuperar la misma jugada, sin opción de sobrescribirla. Cambiar de cuenta: nunca mostrar la del anterior.
