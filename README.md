@@ -1,6 +1,6 @@
 # Lotería — PC01 · Desarrollo de aplicaciones móviles 2026-02
 
-Proyecto Android nuevo para la práctica de Lotería. Esta primera entrega contiene la estructura Gradle, una pantalla inicial Compose y las dependencias de Firebase. **No implementa todavía autenticación, jugadas ni seguimiento.** Esas partes se incorporarán mediante PR separados.
+Proyecto Android nuevo para la práctica de Lotería. Esta primera entrega contiene la estructura Gradle, una pantalla inicial Compose y las dependencias de Firebase. **Esta rama añade registro/login reales con Firebase Auth y cierre de sesión; jugadas y seguimiento siguen pendientes.** Las partes se incorporan mediante PR separados.
 
 ## Integrantes
 
@@ -22,17 +22,19 @@ Versiones fijadas: AGP 8.9.2, Gradle 8.11.1, Kotlin/compiler Compose 2.1.20, Com
 
 ### Estado de verificación
 
-El entorno inicial no tiene Android SDK y su Java por defecto es 8. **La compilación del APK aún no está acreditada**; no se ha ejecutado `assembleDebug` con SDK Android. La pantalla inicial no inicializa ni consume Firebase, por lo que puede abrirse sin configuración de un proyecto externo una vez compilada. Se verificó `gradle help --no-daemon --max-workers=2` en contenedor Gradle 8.11.1/JDK 17: RC0, BUILD SUCCESSFUL. Esto comprueba configuración, no genera ni valida el APK.
+El entorno inicial no tiene Android SDK y su Java por defecto es 8. **La compilación del APK aún no está acreditada**; no se ha ejecutado `assembleDebug` con SDK Android. Sin google-services.json, la pantalla muestra instrucciones de configuración y no intenta autenticar. Se verificó `gradle help --no-daemon --max-workers=2` en contenedor Gradle 8.11.1/JDK 17: RC0, BUILD SUCCESSFUL. Esto comprueba configuración, no genera ni valida el APK.
+
+Las pruebas Kotlin/JVM de autenticación se ejecutaron en contenedor con JDK 17: `:auth-core:test`, **19/19 verdes**. Firebase real, Compose en dispositivo y APK aún no se han probado.
 
 ## Firebase: configuración que aportará Henry
 
-1. Crear un proyecto Firebase y registrar una app Android con paquete **`com.esan.pc01.loteria`**.
+1. Crear un proyecto Firebase y registrar una app Android con paquete **`pe.esan.pc01.loteria`**.
 2. Descargar `google-services.json` y ponerlo en **`app/google-services.json`** localmente. Está ignorado por Git y no debe adjuntarse al PR. No compartir claves privadas ni cuentas de servicio.
 3. Habilitar Authentication → proveedor **correo/contraseña**.
 4. Crear Cloud Firestore. Definir reglas antes de probar las futuras funcionalidades: usuarios autenticados; lectura únicamente de su jugada; creación de una sola jugada propia de seis números distintos 1–45 mientras el sorteo esté abierto; denegar modificar/eliminar jugadas, cabecera y bolillas desde la app. No dejar reglas abiertas ni habilitar cobros para esta base.
 5. Al existir el JSON, Gradle aplica Google Services. Si falta o pertenece a otro paquete, revisar la configuración; no simular login ni conectarse a un proyecto ajeno.
 
-Las dependencias son los módulos principales `firebase-auth` y `firebase-firestore`. Este commit no crea un proyecto Firebase ni publica reglas. La siguiente parte implementará autenticación real, manejo de errores y lectura persistente.
+Las dependencias son los módulos principales `firebase-auth` y `firebase-firestore`. Este PR no crea un proyecto Firebase ni publica reglas. La autenticación implementada y su checklist están en [docs/AUTH.md](docs/AUTH.md); la lectura de jugadas queda para la siguiente parte.
 
 ## Modelo propuesto de Firestore
 
