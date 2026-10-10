@@ -28,7 +28,7 @@ Las pruebas Kotlin/JVM de autenticación se ejecutaron en contenedor con JDK 17:
 
 ## Firebase: configuración que aportará Henry
 
-1. Crear un proyecto Firebase y registrar una app Android con paquete **`com.esan.pc01.loteria`**.
+1. Crear un proyecto Firebase y registrar una app Android con paquete **`pe.esan.pc01.loteria`**.
 2. Descargar `google-services.json` y ponerlo en **`app/google-services.json`** localmente. Está ignorado por Git y no debe adjuntarse al PR. No compartir claves privadas ni cuentas de servicio.
 3. Habilitar Authentication → proveedor **correo/contraseña**.
 4. Crear Cloud Firestore. Definir reglas antes de probar las futuras funcionalidades: usuarios autenticados; lectura únicamente de su jugada; creación de una sola jugada propia de seis números distintos 1–45 mientras el sorteo esté abierto; denegar modificar/eliminar jugadas, cabecera y bolillas desde la app. No dejar reglas abiertas ni habilitar cobros para esta base.

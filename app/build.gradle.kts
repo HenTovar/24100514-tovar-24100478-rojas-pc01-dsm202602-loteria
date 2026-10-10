@@ -13,7 +13,7 @@ android {
     namespace = "com.esan.pc01.loteria"
     compileSdk = 35
     defaultConfig {
-        applicationId = "com.esan.pc01.loteria"
+        applicationId = "pe.esan.pc01.loteria"
         minSdk = 23
         targetSdk = 35
         versionCode = 1
