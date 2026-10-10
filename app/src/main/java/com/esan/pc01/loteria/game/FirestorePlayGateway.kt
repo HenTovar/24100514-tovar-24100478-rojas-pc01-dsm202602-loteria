@@ -55,7 +55,7 @@ class FirestorePlayGateway(private val db: FirebaseFirestore, private val auth: 
         val fecha = doc.getTimestamp("fecha") ?: throw PlayRejected("Falta fecha Timestamp del sorteo en Firestore.")
         val estado = doc.getString("estado")?.takeIf { it in listOf("abierto", "en_curso", "finalizado") }
             ?: throw PlayRejected("Estado del sorteo inválido.")
-        return Sorteo(doc.id, nombre, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "PE")).format(fecha.toDate()), estado)
+        return Sorteo(doc.id, nombre, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "PE")).apply { timeZone = java.util.TimeZone.getTimeZone("America/Lima") }.format(fecha.toDate()), estado)
     }
 
     private fun parsePlay(doc: DocumentSnapshot, sorteoId: String, uid: String): Jugada {
