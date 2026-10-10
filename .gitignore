@@ -1,0 +1,12 @@
+*.iml
+.gradle/
+.kotlin/
+.idea/
+local.properties
+**/build/
+**/google-services.json
+*.jks
+*.keystore
+.env
+.env.*
+.DS_Store
