@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function authenticated() { return request.auth != null; }
+    function validNumber(n) { return n is int && n >= 1 && n <= 45; }
+    function validPlay(uid) {
+      let data = request.resource.data;
+      return data.keys().hasAll(['uid', 'numeros'])
+        && data.keys().hasOnly(['uid', 'numeros'])
+        && data.uid == uid
+        && data.numeros is list && data.numeros.size() == 6
+        && data.numeros.toSet().size() == 6
+        && validNumber(data.numeros[0]) && validNumber(data.numeros[1])
+        && validNumber(data.numeros[2]) && validNumber(data.numeros[3])
+        && validNumber(data.numeros[4]) && validNumber(data.numeros[5]);
+    }
+    match /sorteos/{sorteoId} {
+      allow read: if authenticated();
+      // Cabeceras/bolillas sólo las administra el alumno desde la consola.
+      allow write: if false;
+      match /bolillas/{orden} {
+        allow read: if authenticated();
+        allow write: if false;
+      }
+      match /jugadas/{uid} {
+        allow get: if authenticated() && request.auth.uid == uid;
+        allow list: if false;
+        allow create: if authenticated() && request.auth.uid == uid
+          && validPlay(uid)
+          && get(/databases/$(database)/documents/sorteos/$(sorteoId)).data.estado == 'abierto';
+        // Una sola jugada: no modificarla ni borrarla, incluso antes de iniciar.
+        allow update, delete: if false;
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

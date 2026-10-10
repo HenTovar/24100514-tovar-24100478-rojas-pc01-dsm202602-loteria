@@ -26,15 +26,30 @@ El entorno inicial no tiene Android SDK y su Java por defecto es 8. **La compila
 
 Las pruebas Kotlin/JVM de autenticación se ejecutaron en contenedor con JDK 17: `:auth-core:test`, **19/19 verdes**. Firebase real, Compose en dispositivo y APK aún no se han probado.
 
-## Firebase: configuración que aportará Henry
+## Firebase: configuración del proyecto de Henry
 
 1. Crear un proyecto Firebase y registrar una app Android con paquete **`pe.esan.pc01.loteria`**.
-2. Descargar `google-services.json` y ponerlo en **`app/google-services.json`** localmente. Está ignorado por Git y no debe adjuntarse al PR. No compartir claves privadas ni cuentas de servicio.
+2. **Henry autorizó incluir `app/google-services.json` en este repositorio público**, correspondiente al proyecto `pc01-loteria` y paquete `pe.esan.pc01.loteria`. Es configuración cliente; no contiene una cuenta de servicio ni claves privadas. Para otro proyecto, sustituirlo por su propia configuración. Nunca subir tokens GitHub, claves privadas o cuentas de servicio.
 3. Habilitar Authentication → proveedor **correo/contraseña**.
-4. Crear Cloud Firestore. Definir reglas antes de probar las futuras funcionalidades: usuarios autenticados; lectura únicamente de su jugada; creación de una sola jugada propia de seis números distintos 1–45 mientras el sorteo esté abierto; denegar modificar/eliminar jugadas, cabecera y bolillas desde la app. No dejar reglas abiertas ni habilitar cobros para esta base.
+4. Crear Cloud Firestore y **publicar las reglas de `firestore.rules` antes de usar datos reales**, con los pasos de abajo. Estar en modo de prueba permite acceso abierto: el archivo del repositorio NO cambia automáticamente las reglas del proyecto. No habilitar cobros para esta base.
 5. Al existir el JSON, Gradle aplica Google Services. Si falta o pertenece a otro paquete, revisar la configuración; no simular login ni conectarse a un proyecto ajeno.
 
-Las dependencias son los módulos principales `firebase-auth` y `firebase-firestore`. Este PR no crea un proyecto Firebase ni publica reglas. La autenticación implementada y su checklist están en [docs/AUTH.md](docs/AUTH.md); la lectura de jugadas queda para la siguiente parte.
+Las dependencias son los módulos principales `firebase-auth` y `firebase-firestore`. Este PR incluye configuración cliente y reglas, pero no crea un proyecto Firebase ni despliega reglas a la nube. La autenticación implementada y su checklist están en [docs/AUTH.md](docs/AUTH.md); la lectura de jugadas queda para la siguiente parte.
+
+## Publicar las reglas en la consola (Henry)
+
+1. Entrar en Firebase Console y seleccionar **pc01-loteria**. Abrir **Firestore Database → Rules/Reglas** de la base usada por la app.
+2. Reemplazar **todo** el contenido actual (incluidas reglas del modo de prueba) por el contenido completo de [`firestore.rules`](firestore.rules).
+3. Pulsar **Publish/Publicar** y comprobar que quedó publicado. Si hay un error, no continuar con la prueba hasta corregirlo.
+4. Comprobar con el simulador/las dos sesiones: sin login no se lee/escribe; un usuario sólo obtiene su propia jugada por `jugadas/{uid}`; escribir la de otro UID se rechaza. La app no puede cambiar cabecera/bolillas; se administran desde la consola con la cuenta de Henry.
+
+Las reglas permiten crear una jugada válida propia únicamente con sorteo `abierto`, y deniegan actualizarla/borrarla, leer jugadas ajenas o listar la colección. También validan seis enteros distintos 1–45 y rechazan campos de resultado. La consola administrativa usa permisos de administración; no añadir una regla abierta para publicar bolillas desde la app. **Estas instrucciones no acreditan que las reglas ya estén publicadas**: lo hace Henry desde su consola.
+
+**Validación ejecutada:** 11/11 pruebas, RC0, en Firestore Emulator 1.19.8 dentro de un contenedor desechable (proyecto `demo-loteria-pc01`). No se escribieron datos ni reglas en el Firebase real.
+
+### Probar reglas sin tocar Firebase real
+
+Con Node 20/22, JDK 17 y Firebase CLI compatible: `cd rules-tests && npm ci && cd ..`, después `npx firebase-tools@13.35.1 emulators:exec --only firestore --project demo-loteria-pc01 "npm --prefix rules-tests test"`. Usar únicamente el proyecto `demo-loteria-pc01`: los tests rechazan un host distinto de `127.0.0.1:8080`. Firebase Emulator Suite no necesita credenciales para ese proyecto demo. No ejecutar `firebase deploy` desde esta guía.
 
 ## Modelo propuesto de Firestore
 

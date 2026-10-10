@@ -23,7 +23,7 @@ Validación ejecutada en contenedor Gradle 8.11.1/JDK 17: **19 tests, 0 fallos, 
 5. Reabrir con sesión existente: mostrar correo recuperado por Firebase. Cerrar sesión y reabrir: mostrar login, no el usuario anterior.
 6. Rotar el dispositivo y pasar registro/login varias veces: sin listener duplicado ni cierre inesperado. La contraseña no se restaura tras recrear Activity.
 
-La prueba con Firebase, emulador/dispositivo y la generación del APK queda pendiente de SDK y configuración aportados por Henry. No configurar cuentas externas ni habilitar créditos desde este PR.
+La configuración cliente de Henry ya está incluida con su autorización. La prueba real de Firebase, el emulador/dispositivo y la generación del APK quedan pendientes de SDK; verificar también el proveedor correo/contraseña en su consola. No configurar cuentas externas ni habilitar créditos desde este PR.
 
 ## Fuentes
 
