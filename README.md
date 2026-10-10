@@ -4,12 +4,12 @@ Proyecto Android nuevo para la práctica de Lotería. Incluye registro/login con
 
 ## Integrantes
 
-| Integrante | Código | Cuenta GitHub |
+| Nombre completo | Código | GitHub |
 |---|---|---|
-| Henry Tovar | 24100514 | HenTovar |
-| Rojas | 24100478 | jutt-pixel |
+| Henry Aaron Tovar Landa | 24100514 | HenTovar |
+| Julia Jhamilett Rojas Estrada | 24100478 | jutt-pixel |
 
-Los nombres se mantienen como fueron proporcionados para el repositorio; completar los nombres de presentación requeridos por el docente antes de la entrega del curso.
+Desarrollado con asistencia de IA.
 
 ## Abrir y ejecutar
 
