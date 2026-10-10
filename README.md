@@ -81,3 +81,7 @@ Usar dos emuladores/dispositivos, cuentas distintas, mismo proyecto y sorteo. An
 - [Compatibilidad de AGP 8.9](https://developer.android.com/build/releases/agp-8-9-0-release-notes)
 - [Configuración de Compose Compiler](https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler)
 - [Agregar Firebase a Android](https://firebase.google.com/docs/android/setup)
+
+## Seguimiento en tiempo real
+
+Desde la jugada guardada, entra a **Seguir sorteo en tiempo real**. Cabecera y bolillas se reciben por listeners Firestore, sin polling; se retiran al salir. Guía, datos de consola y pruebas: [docs/SEGUIMIENTO.md](docs/SEGUIMIENTO.md). El resultado final GANADOR/SIGUE queda para la siguiente parte.
