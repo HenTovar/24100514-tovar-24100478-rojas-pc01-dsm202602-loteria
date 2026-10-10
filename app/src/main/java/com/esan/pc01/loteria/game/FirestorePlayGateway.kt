@@ -50,7 +50,7 @@ class FirestorePlayGateway(private val db: FirebaseFirestore, private val auth: 
         }
     }
 
-    private fun parseDraw(doc: DocumentSnapshot): Sorteo {
+    internal fun parseDraw(doc: DocumentSnapshot): Sorteo {
         val nombre = doc.getString("nombre")?.takeIf { it.isNotBlank() } ?: throw PlayRejected("Falta nombre del sorteo en Firestore.")
         val fecha = doc.getTimestamp("fecha") ?: throw PlayRejected("Falta fecha Timestamp del sorteo en Firestore.")
         val estado = doc.getString("estado")?.takeIf { it in listOf("abierto", "en_curso", "finalizado") }

@@ -18,6 +18,11 @@ fun PlayScreen(uid: String, email: String?, onSignOut: () -> Unit) {
     }
     DisposableEffect(controller) { controller.loadDraws(); onDispose { controller.close() } }
     val state by controller.state.collectAsState()
+    var following by remember(state.selected?.id) { mutableStateOf(false) }
+    if (following && state.play != null) {
+        FollowScreen(state.play!!, onBack = { following = false }, onSignOut = onSignOut)
+        return
+    }
     var input by remember(state.selected?.id) { mutableStateOf("") }
     BackHandler(enabled = state.selected != null) { if (!state.busy) controller.back() }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
@@ -43,7 +48,7 @@ fun PlayScreen(uid: String, email: String?, onSignOut: () -> Unit) {
             if (play != null) {
                 Text("Tu jugada: ${play.numeros.joinToString(", ")}")
                 Text("Esta jugada ya está guardada y no puede modificarse.")
-                Text("El seguimiento en tiempo real se incorporará en la siguiente parte.")
+                Button(onClick = { following = true }) { Text("Seguir sorteo en tiempo real") }
             } else if (state.ownPlayLoaded && draw.estado == "abierto") {
                 OutlinedTextField(value = input, onValueChange = { input = it }, enabled = !state.busy,
                     label = { Text("Seis números separados por comas") },
