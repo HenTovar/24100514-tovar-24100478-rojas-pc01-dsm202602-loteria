@@ -7,7 +7,7 @@
 3. La entrada es una lista de seis enteros separados por comas. `parseNumbers` y `validNumbers` verifican cantidad, tipos, rango 1–45 y unicidad antes de llamar al repositorio. La selección permanece visible; no se calculan resultados en esta parte.
 4. `FirestorePlayGateway.create` revalida en una **transacción** la cabecera del sorteo y el documento de jugada. Todas las lecturas van antes de la escritura. Si el sorteo dejó de estar abierto o ya existe jugada, no escribe. Firestore reintenta ante cambios concurrentes y las reglas vuelven a comprobar el estado y el UID en el servidor.
 5. Se guarda exactamente `sorteoId`, `uid`, `numeros` en `sorteos/{sorteoId}/jugadas/{uid}`. El UID es el documento, no un ID aleatorio. Al volver a entrar se recupera ese documento; se rechazan datos almacenados con UID/sorteo/números inválidos.
-6. No se guarda GANADOR, aciertos ni resultado. El seguimiento por listeners y los cálculos pertenecen a PR siguientes. No hay polling: en esta parte son lecturas puntuales, selección y actualización manual del catálogo.
+6. No se guarda GANADOR, aciertos ni resultado. El seguimiento por listeners y los cálculos están en la pantalla de seguimiento; consulta [SEGUIMIENTO.md](SEGUIMIENTO.md). No hay polling: en esta parte son lecturas puntuales, selección y actualización manual del catálogo.
 7. El controlador se crea por UID. Al salir o cerrar sesión se descarta y se ignoran callbacks tardíos; no se conserva la jugada de un usuario para el siguiente.
 
 ## Configuración y prueba por Henry

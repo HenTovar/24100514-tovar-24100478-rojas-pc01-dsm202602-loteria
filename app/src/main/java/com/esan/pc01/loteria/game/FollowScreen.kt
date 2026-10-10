@@ -18,7 +18,8 @@ fun FollowScreen(play: Jugada, onBack: () -> Unit, onSignOut: () -> Unit) {
     }
     DisposableEffect(controller) { controller.start(); onDispose { controller.close() } }
     val state by controller.state.collectAsState()
-    val matched = controller.matchedNumbers()
+    val summary = summarizeFollow(play, state)
+    val matched = summary.matched
     BackHandler { onBack() }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -45,6 +46,9 @@ fun FollowScreen(play: Jugada, onBack: () -> Unit, onSignOut: () -> Unit) {
             }
         }
         Text("Los números resaltados ya salieron.")
+        Text("Aciertos: ${matched.size} de 6")
+        Text("Bolillas publicadas: ${summary.published} de 6")
+        summary.finalResult?.let { Text(it, style = MaterialTheme.typography.headlineMedium) }
         Text("Bolillas en orden de salida", style = MaterialTheme.typography.titleMedium)
         if (!state.ballsLoading && state.balls.isEmpty() && state.ballsError == null) Text("Todavía no hay bolillas.")
         state.balls.forEach { ball ->
